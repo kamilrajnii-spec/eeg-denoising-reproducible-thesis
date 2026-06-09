@@ -14,7 +14,7 @@ Phase 2 implements:
 
 1. DWT wavelet denoising baseline,
 2. honest ICA baseline checks for compatible multi-channel EEG,
-3. a 1-D convolutional DAE,
+3. a 1-D convolutional DAE trained on DWT output to clean EEG,
 4. the Wavelet to DAE hybrid pipeline,
 5. measured inference-time profiling.
 
@@ -81,14 +81,35 @@ results/phase2/training_loss.csv
 results/phase2/training_loss_curve.png
 results/phase2/model_summary.txt
 results/phase2/dae_best_model.pt
+results/phase2/training_manifest.csv
+results/phase2/heldout_evaluation_table.csv
 results/phase2/inference_time.csv
+results/phase2/inference_time_summary.csv
 results/phase2/hybrid_comparison_plot.png
 ```
+
+## Method Notes
+
+The DAE is trained on `DWT wavelet output -> clean EEG`, matching the hybrid
+pipeline used during inference.
+
+Train, validation, and test data are split by clean EEG epoch ID before artifact
+mixing. This prevents the same clean epoch from appearing in multiple splits
+with different artifact versions.
+
+The DWT baseline should not be described as universally improving all artifact
+types. Under the current `db4`, level 4, soft-threshold setup, blink/EOG rows
+may show negative SNR gain. That should be reported honestly as a limitation and
+as motivation for parameter tuning.
+
+ICA is implemented as a compatibility-checked baseline. It is skipped for
+single-channel EEGdenoiseNet epochs and applied only to compatible multi-channel
+PhysioNet EEG. PhysioNet does not provide clean/noisy ground truth pairs, so
+clean-reference ICA metrics are not reported.
 
 ## Tests
 
 ```bash
 pytest -q
 ```
-
 

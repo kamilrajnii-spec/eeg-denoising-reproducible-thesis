@@ -98,7 +98,7 @@ def main() -> int:
             "clean_eeg_shape": "",
             "eog_shape": "",
             "emg_shape": "",
-            "file": str(physionet["file"]),
+            "file": str(Path(physionet["file"]).relative_to(PROJECT_ROOT)),
             "channels": physionet["channels"],
             "sampling_rate_hz": physionet["sampling_rate"],
             "duration_seconds": round(float(physionet["duration_seconds"]), 2),

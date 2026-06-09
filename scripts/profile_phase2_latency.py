@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import platform
 import sys
 import time
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 
@@ -26,6 +28,7 @@ from eeg_denoising.wavelet.dwt_denoising import denoise_epochs_dwt  # noqa: E402
 OUTPUT_DIR = PROJECT_ROOT / "results" / "phase2"
 CHECKPOINT_PATH = OUTPUT_DIR / "dae_best_model.pt"
 LATENCY_PATH = OUTPUT_DIR / "inference_time.csv"
+SUMMARY_PATH = OUTPUT_DIR / "inference_time_summary.csv"
 
 
 def main() -> int:
@@ -38,6 +41,7 @@ def main() -> int:
 
     noisy = load_profile_noisy_epochs(args)
     model = load_dae_checkpoint(args.checkpoint, device=args.device)
+    run_warm_up_passes(noisy[0], model, args)
 
     rows = []
     for segment_id, epoch in enumerate(noisy, start=1):
@@ -64,8 +68,12 @@ def main() -> int:
             ]
         )
 
-    pd.DataFrame(rows).to_csv(LATENCY_PATH, index=False)
+    latency_frame = pd.DataFrame(rows)
+    latency_frame.to_csv(LATENCY_PATH, index=False)
+    make_latency_summary(latency_frame, args).to_csv(SUMMARY_PATH, index=False)
+
     print(f"Created {LATENCY_PATH}")
+    print(f"Created {SUMMARY_PATH}")
     print("Latency values are measured by this script, not manually claimed.")
 
     return 0
@@ -93,16 +101,52 @@ def latency_row(segment_id: int, method: str, milliseconds: float) -> dict[str, 
     }
 
 
+def run_warm_up_passes(epoch, model, args: argparse.Namespace) -> None:
+    """Run untimed warm-up passes before measuring latency."""
+    segment = epoch.reshape(1, -1)
+
+    for _ in range(args.warm_up_passes):
+        wavelet = denoise_epochs_dwt(segment)
+        _ = apply_dae_to_epochs(wavelet, model, device=args.device)
+
+
+def make_latency_summary(
+    latency_frame: pd.DataFrame,
+    args: argparse.Namespace,
+) -> pd.DataFrame:
+    """Create summary latency statistics with hardware context."""
+    cpu = platform.processor() or platform.machine()
+    rows = []
+
+    for method, group in latency_frame.groupby("method"):
+        values = group["milliseconds"].to_numpy(dtype=float)
+        std_ms = np.std(values, ddof=1) if values.size > 1 else 0.0
+        rows.append(
+            {
+                "method": method,
+                "mean_ms": round(float(np.mean(values)), 6),
+                "std_ms": round(float(std_ms), 6),
+                "median_ms": round(float(np.median(values)), 6),
+                "p95_ms": round(float(np.percentile(values, 95)), 6),
+                "n_segments": int(values.size),
+                "device": args.device,
+                "cpu": cpu,
+            }
+        )
+
+    return pd.DataFrame(rows)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--checkpoint", type=Path, default=CHECKPOINT_PATH)
     parser.add_argument("--segments", type=int, default=20)
     parser.add_argument("--artifact-type", default="mixed", choices=["blink", "muscle", "mixed"])
     parser.add_argument("--snr-db", type=float, default=0.0)
+    parser.add_argument("--warm-up-passes", type=int, default=5)
     parser.add_argument("--device", default="cpu")
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

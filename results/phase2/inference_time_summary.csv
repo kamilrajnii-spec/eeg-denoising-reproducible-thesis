@@ -1,0 +1,4 @@
+method,mean_ms,std_ms,median_ms,p95_ms,n_segments,device,cpu
+dae_after_wavelet,0.459671,0.035007,0.462645,0.501572,20,cpu,arm
+hybrid_wavelet_dae,0.540742,0.032951,0.545667,0.583913,20,cpu,arm
+wavelet_only,0.097356,0.010117,0.093541,0.113655,20,cpu,arm

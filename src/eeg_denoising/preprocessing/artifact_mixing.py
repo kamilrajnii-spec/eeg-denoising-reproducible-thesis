@@ -77,7 +77,7 @@ def scale_artifact_to_snr(
     if np.any(artifact_power <= EPSILON):
         raise ValueError("Artifact power is too close to zero for SNR scaling.")
 
-    target_artifact_power = clean_power / (10.0 ** (target_snr_db / 10.0)) 
+    target_artifact_power = clean_power / (10.0 ** (target_snr_db / 10.0))
     scale = np.sqrt(target_artifact_power / artifact_power)
 
     return artifact_epochs * scale
@@ -93,7 +93,7 @@ def mix_artifact(
     scaled_artifact = scale_artifact_to_snr(clean_epochs, artifact, target_snr_db)
     noisy = clean_epochs + scaled_artifact
 
-    return noisy, scaled_artifact # (0, 1) tuple of (noisy, scaled_artifact)
+    return noisy, scaled_artifact
 
 
 def create_artifact_pairs(

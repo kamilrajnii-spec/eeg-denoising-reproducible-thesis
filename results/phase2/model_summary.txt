@@ -1,0 +1,9 @@
+Phase 2 DAE model summary
+Model: 1-D convolutional denoising autoencoder
+Input shape: (1, 1, 512)
+Output shape: (1, 1, 512)
+Parameter count: 24513
+Training pairs used: 5400
+Epochs requested: 5
+Batch size: 64
+Best checkpoint: ./results/phase2/dae_best_model.pt

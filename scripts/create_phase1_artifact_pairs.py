@@ -28,7 +28,10 @@ def _write_example_plot(pairs, output_path: Path) -> None:
     import matplotlib.pyplot as plt
 
     selected_pairs = [
-        pair for pair in pairs if pair.target_snr_db == 0.0 and pair.artifact_type in {"blink", "muscle", "mixed"}
+        pair
+        for pair in pairs
+        if pair.target_snr_db == 0.0
+        and pair.artifact_type in {"blink", "muscle", "mixed"}
     ]
 
     fig, axes = plt.subplots(len(selected_pairs), 1, figsize=(10, 7), sharex=True)

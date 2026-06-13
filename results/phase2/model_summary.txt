@@ -8,6 +8,6 @@ Training target: clean EEG
 Training pairs used: 3780
 Validation pairs used: 810
 Held-out test pairs used: 810
-Epochs requested: 5
+Epochs requested: 10
 Batch size: 64
 Best checkpoint: results/phase2/dae_best_model.pt

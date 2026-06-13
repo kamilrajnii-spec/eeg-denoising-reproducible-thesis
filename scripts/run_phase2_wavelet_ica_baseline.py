@@ -30,6 +30,7 @@ from eeg_denoising.wavelet.dwt_denoising import denoise_epochs_dwt  # noqa: E402
 
 
 OUTPUT_PATH = PROJECT_ROOT / "results" / "phase2" / "wavelet_ica_baseline_table.csv"
+PHYSIONET_ICA_PATH = PROJECT_ROOT / "results" / "phase2" / "physionet_ica_baseline_table.csv"
 
 
 def main() -> int:
@@ -81,11 +82,18 @@ def main() -> int:
         }
     )
 
+    physionet_rows = []
     if not args.skip_physionet_ica:
-        rows.append(run_physionet_ica_row(args))
+        physionet_row = run_physionet_ica_row(args)
+        rows.append(physionet_row)
+        physionet_rows.append(physionet_row)
 
     pd.DataFrame(rows).to_csv(OUTPUT_PATH, index=False)
+    if physionet_rows:
+        pd.DataFrame(physionet_rows).to_csv(PHYSIONET_ICA_PATH, index=False)
     print(f"Created {OUTPUT_PATH}")
+    if physionet_rows:
+        print(f"Created {PHYSIONET_ICA_PATH}")
 
     return 0
 
@@ -106,6 +114,14 @@ def run_physionet_ica_row(args: argparse.Namespace) -> dict[str, object]:
             "rmse": "",
             "rrmse": "",
             "epochs_used": "",
+            "subjects_processed": 0,
+            "subject_ids": "",
+            "channels": "",
+            "samples_processed": "",
+            "ica_components_estimated": "",
+            "artifact_components_identified": "",
+            "excluded_components": "",
+            "processing_time_seconds": "",
             "status": "skipped",
             "notes": str(error),
         }
@@ -114,6 +130,8 @@ def run_physionet_ica_row(args: argparse.Namespace) -> dict[str, object]:
         physionet["raw"],
         duration_seconds=args.physionet_ica_seconds,
     )
+    edf_file = Path(physionet["file"])
+    subject_id = edf_file.parent.name
 
     return {
         "dataset": "PhysioNet Motor Imagery",
@@ -126,6 +144,14 @@ def run_physionet_ica_row(args: argparse.Namespace) -> dict[str, object]:
         "rmse": "",
         "rrmse": "",
         "epochs_used": "",
+        "subjects_processed": 1,
+        "subject_ids": subject_id,
+        "channels": physionet["channels"],
+        "samples_processed": result.n_samples,
+        "ica_components_estimated": result.n_components,
+        "artifact_components_identified": len(result.excluded_components),
+        "excluded_components": str(result.excluded_components),
+        "processing_time_seconds": round(result.processing_time_seconds, 6),
         "status": result.status,
         "notes": (
             f"{result.message} Excluded components: "
@@ -147,4 +173,3 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

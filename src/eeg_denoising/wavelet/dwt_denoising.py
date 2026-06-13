@@ -11,6 +11,10 @@ import pywt
 
 
 DEFAULT_WAVELET = "db4"
+# For 512-sample EEGdenoiseNet epochs treated at 256 Hz, level 4 gives
+# approximate DWT bands of D1 64-128 Hz, D2 32-64 Hz, D3 16-32 Hz,
+# D4 8-16 Hz, and A4 0-8 Hz. This keeps high-frequency muscle activity
+# in detail bands while preserving low-frequency EEG trends in A4.
 DEFAULT_LEVEL = 4
 DEFAULT_MODE = "soft"
 EPSILON = 1e-12
@@ -77,4 +81,3 @@ def denoise_epochs_dwt(
     ]
 
     return np.asarray(denoised, dtype=float)
-

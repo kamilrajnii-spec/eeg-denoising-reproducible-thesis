@@ -7,6 +7,7 @@ instead of producing fake metrics.
 
 from __future__ import annotations
 
+import time
 from dataclasses import dataclass
 
 import numpy as np
@@ -19,6 +20,10 @@ class ICAResult:
 
     cleaned_data: np.ndarray | None
     excluded_components: list[int]
+    n_components: int
+    n_channels: int
+    n_samples: int
+    processing_time_seconds: float
     status: str
     message: str
 
@@ -66,9 +71,14 @@ def run_fastica_baseline(
 ) -> ICAResult:
     """Apply MNE FastICA when data is compatible multi-channel EEG."""
     if not is_ica_compatible(data):
+        array = np.asarray(data)
         return ICAResult(
             cleaned_data=None,
             excluded_components=[],
+            n_components=0,
+            n_channels=int(array.shape[0]) if array.ndim == 2 else 0,
+            n_samples=int(array.shape[1]) if array.ndim == 2 else 0,
+            processing_time_seconds=0.0,
             status="skipped",
             message=(
                 "ICA requires multi-channel data. EEGdenoiseNet epoch pairs are "
@@ -94,10 +104,15 @@ def run_fastica_baseline(
         return ICAResult(
             cleaned_data=None,
             excluded_components=[],
+            n_components=0,
+            n_channels=n_channels,
+            n_samples=int(data_array.shape[1]),
+            processing_time_seconds=0.0,
             status="skipped",
             message="Not enough channels for ICA component estimation.",
         )
 
+    start_time = time.perf_counter()
     ica = ICA(
         n_components=component_count,
         method="fastica",
@@ -114,10 +129,15 @@ def run_fastica_baseline(
     if excluded:
         ica.exclude = excluded
         ica.apply(cleaned_raw, verbose=False)
+    processing_time = time.perf_counter() - start_time
 
     return ICAResult(
         cleaned_data=cleaned_raw.get_data(),
         excluded_components=excluded,
+        n_components=int(component_count),
+        n_channels=n_channels,
+        n_samples=int(data_array.shape[1]),
+        processing_time_seconds=float(processing_time),
         status="applied",
         message="ICA applied with FastICA and variance/kurtosis heuristics.",
     )

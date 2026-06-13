@@ -80,7 +80,7 @@ def main() -> int:
 
     pairs = create_artifact_pairs(clean, eog, emg, snr_levels_db=SNR_LEVELS_DB)
 
-    dataset_rows = [
+    dataset_rows: list[dict] = [
         {
             "dataset": "EEGdenoiseNet",
             "status": "loaded",

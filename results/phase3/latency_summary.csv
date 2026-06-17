@@ -1,4 +1,4 @@
 method,mean_ms,std_ms,median_ms,p95_ms,min_ms,max_ms,n_segments,warmup_passes,device,cpu
-wavelet_only,0.094411,0.012785,0.094125,0.112006,0.07425,0.167459,200,20,cpu,arm
-dae_after_wavelet,0.441036,0.041404,0.433334,0.528746,0.386208,0.650125,200,20,cpu,arm
-hybrid_total,0.536824,0.07081,0.524562,0.620491,0.458125,1.150583,200,20,cpu,arm
+wavelet_only,0.307709,0.076609,0.30705,0.44101,0.2199,0.8282,200,20,cpu,"Intel64 Family 6 Model 142 Stepping 12, GenuineIntel"
+dae_after_wavelet,1.103193,0.214589,1.12885,1.489325,0.8374,1.9875,200,20,cpu,"Intel64 Family 6 Model 142 Stepping 12, GenuineIntel"
+hybrid_total,1.426422,0.27408,1.4482,1.866685,1.0221,2.4641,200,20,cpu,"Intel64 Family 6 Model 142 Stepping 12, GenuineIntel"

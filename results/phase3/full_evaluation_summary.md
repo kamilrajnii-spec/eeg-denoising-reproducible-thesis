@@ -17,7 +17,7 @@ ICA is not compared on EEGdenoiseNet because these artifact pairs are single-cha
 
 | Artifact | SNR level | Method | Mean SNR gain dB | Mean RMSE |
 | --- | ---: | --- | ---: | ---: |
-| blink | -5 | hybrid_wavelet_dae | 6.486987 | 178.878680 |
+| blink | -5 | hybrid_wavelet_dae | 6.486987 | 178.878679 |
 | blink | -5 | noisy_input | 0.000000 | 376.516629 |
 | blink | -5 | wavelet_only | -0.126990 | 381.982527 |
 | blink | 0 | hybrid_wavelet_dae | 3.886180 | 135.529370 |
@@ -26,15 +26,15 @@ ICA is not compared on EEGdenoiseNet because these artifact pairs are single-cha
 | blink | 5 | hybrid_wavelet_dae | 0.414552 | 113.378856 |
 | blink | 5 | noisy_input | 0.000000 | 119.065012 |
 | blink | 5 | wavelet_only | -1.260819 | 137.456027 |
-| mixed | -5 | hybrid_wavelet_dae | 6.710721 | 174.533931 |
+| mixed | -5 | hybrid_wavelet_dae | 6.216357 | 184.070194 |
 | mixed | -5 | noisy_input | 0.000000 | 376.516629 |
-| mixed | -5 | wavelet_only | 4.356336 | 235.577598 |
-| mixed | 0 | hybrid_wavelet_dae | 3.380459 | 143.227758 |
+| mixed | -5 | wavelet_only | 1.398372 | 321.850238 |
+| mixed | 0 | hybrid_wavelet_dae | 3.339948 | 143.846687 |
 | mixed | 0 | noisy_input | 0.000000 | 211.730860 |
-| mixed | 0 | wavelet_only | 2.366287 | 162.666100 |
-| mixed | 5 | hybrid_wavelet_dae | -0.121964 | 120.209986 |
+| mixed | 0 | wavelet_only | 0.522013 | 199.536782 |
+| mixed | 5 | hybrid_wavelet_dae | 0.015746 | 118.497221 |
 | mixed | 5 | noisy_input | 0.000000 | 119.065012 |
-| mixed | 5 | wavelet_only | -0.062443 | 119.908677 |
+| mixed | 5 | wavelet_only | -0.954188 | 132.648060 |
 | muscle | -5 | hybrid_wavelet_dae | 6.739184 | 173.935758 |
 | muscle | -5 | noisy_input | 0.000000 | 376.516629 |
 | muscle | -5 | wavelet_only | 4.531527 | 231.160639 |

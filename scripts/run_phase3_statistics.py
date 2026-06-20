@@ -40,6 +40,23 @@ def main() -> int:
     return 0
 
 
+def paired_cohens_d(treatment: np.ndarray, baseline: np.ndarray) -> float:
+    """Cohen's d for paired samples: mean difference over its standard deviation.
+
+    Uses the standard deviation of the paired differences (d_z), which is the
+    appropriate paired-design effect size to accompany the Wilcoxon test and is
+    reproducible from full_evaluation_per_pair.csv.
+    """
+    differences = np.asarray(treatment, dtype=float) - np.asarray(baseline, dtype=float)
+    n = differences.size
+    if n < 2:
+        return float("nan")
+    std = np.std(differences, ddof=1)
+    if std == 0:
+        return float("nan")
+    return float(np.mean(differences) / std)
+
+
 def run_statistics(per_pair: pd.DataFrame) -> pd.DataFrame:
     """Run Wilcoxon tests for hybrid SNR against noisy and wavelet baselines."""
     rows = []
@@ -53,9 +70,11 @@ def run_statistics(per_pair: pd.DataFrame) -> pd.DataFrame:
         ]
 
         for comparison_name, baseline_method in comparisons:
+            hybrid_values = pivot["hybrid_wavelet_dae"].to_numpy()
+            baseline_values = pivot[baseline_method].to_numpy()
             result = paired_wilcoxon_greater(
-                pivot["hybrid_wavelet_dae"].to_numpy(),
-                pivot[baseline_method].to_numpy(),
+                hybrid_values,
+                baseline_values,
             )
             rows.append(
                 {
@@ -69,6 +88,7 @@ def run_statistics(per_pair: pd.DataFrame) -> pd.DataFrame:
                     "wilcoxon_statistic": result.statistic,
                     "p_value": result.p_value,
                     "effect_size_r": result.effect_size_r,
+                    "cohens_d": paired_cohens_d(hybrid_values, baseline_values),
                 }
             )
 

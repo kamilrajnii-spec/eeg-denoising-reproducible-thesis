@@ -6,6 +6,7 @@ import pytest
 from eeg_denoising.evaluation.metrics import snr
 from eeg_denoising.preprocessing.artifact_mixing import (
     align_artifact_to_clean,
+    combine_artifacts_equal_power,
     create_artifact_pairs,
     mix_artifact,
 )
@@ -43,4 +44,21 @@ def test_align_artifact_to_clean_repeats_or_crops_shape_only() -> None:
     aligned = align_artifact_to_clean(clean, artifact)
 
     assert aligned.shape == clean.shape
+
+
+def test_combine_artifacts_equal_power_balances_components() -> None:
+    rng = np.random.default_rng(0)
+    # EMG epochs carry far more power than EOG epochs, as in EEGdenoiseNet.
+    eog = rng.standard_normal((4, 512)) * 1.0
+    emg = rng.standard_normal((4, 512)) * 200.0
+
+    mixed = combine_artifacts_equal_power(eog, emg)
+
+    # Each component is rescaled to unit RMS before summation, so per epoch the
+    # mixed power is approximately the sum of two unit-power signals (~2.0),
+    # i.e. neither component is negligible.
+    mixed_power = np.mean(mixed**2, axis=1)
+    assert np.all(mixed_power > 1.5)
+    assert np.all(mixed_power < 2.5)
+
 

@@ -83,6 +83,40 @@ def scale_artifact_to_snr(
     return artifact_epochs * scale
 
 
+def combine_artifacts_equal_power(
+    eog: np.ndarray,
+    emg: np.ndarray,
+) -> np.ndarray:
+    """Combine ocular and myogenic artifacts so each contributes equal power.
+
+    The raw EMG epochs in EEGdenoiseNet carry far more power than the EOG
+    epochs (roughly four orders of magnitude). Summing them directly and then
+    normalising the sum to a target SNR leaves the ocular component at a
+    negligible fraction of the mixed signal. To create a genuinely mixed
+    artifact that tests simultaneous ocular and myogenic removal, each
+    component is first mean-removed and rescaled to unit RMS (equal power)
+    before summation. The resulting mixed artifact is later scaled as a whole
+    to hit the requested SNR, preserving the 50/50 power balance between the
+    two artifact types.
+    """
+    eog_epochs = _as_2d_epochs(eog)
+    emg_epochs = _as_2d_epochs(emg)
+
+    eog_epochs = eog_epochs - np.mean(eog_epochs, axis=1, keepdims=True)
+    emg_epochs = emg_epochs - np.mean(emg_epochs, axis=1, keepdims=True)
+
+    eog_power = np.mean(eog_epochs**2, axis=1, keepdims=True)
+    emg_power = np.mean(emg_epochs**2, axis=1, keepdims=True)
+
+    if np.any(eog_power <= EPSILON) or np.any(emg_power <= EPSILON):
+        raise ValueError("Artifact power is too close to zero for equal-power mixing.")
+
+    eog_unit = eog_epochs / np.sqrt(eog_power)
+    emg_unit = emg_epochs / np.sqrt(emg_power)
+
+    return eog_unit + emg_unit
+
+
 def mix_artifact(
     clean: np.ndarray,
     artifact: np.ndarray,
@@ -106,7 +140,7 @@ def create_artifact_pairs(
     clean_epochs = _as_2d_epochs(clean_eeg)
     eog_epochs = align_artifact_to_clean(clean_epochs, eog)
     emg_epochs = align_artifact_to_clean(clean_epochs, emg)
-    mixed_artifacts = eog_epochs + emg_epochs
+    mixed_artifacts = combine_artifacts_equal_power(eog_epochs, emg_epochs)
 
     pairs: list[ArtifactPair] = []
     artifact_sources = {

@@ -10,4 +10,4 @@ Validation pairs used: 810
 Held-out test pairs used: 810
 Epochs requested: 10
 Batch size: 64
-Best checkpoint: results\phase2\dae_best_model.pt
+Best checkpoint: results/phase2/dae_best_model.pt
